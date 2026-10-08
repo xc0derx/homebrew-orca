@@ -4,12 +4,11 @@ class Orca < Formula
   version "1.4.222"
   license "MIT"
 
-  on_arm do
+  if Hardware::CPU.arm?
     url "https://github.com/stablyai/orca/releases/download/v#{version}/orca-linux-arm64.AppImage",
         using: :nounzip
     sha256 "fc36305c09c6942adb7fbf42ba01cee58fed17de9c618db42d76f3fa02110444"
-  end
-  on_intel do
+  else
     url "https://github.com/stablyai/orca/releases/download/v#{version}/orca-linux.AppImage",
         using: :nounzip
     sha256 "3ffbc27329bb427d6ddcb7e408cf7c2d5c888602d4b0f4b98acfd74dd5ba5eb5"
