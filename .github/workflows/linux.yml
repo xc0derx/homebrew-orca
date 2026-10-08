@@ -1,0 +1,44 @@
+name: Linux formula
+
+on:
+  push:
+    paths:
+      - Formula/**
+      - .github/workflows/linux.yml
+  pull_request:
+    paths:
+      - Formula/**
+      - .github/workflows/linux.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: Homebrew/actions/setup-homebrew@9ffcbcc2c89631400988e8d4b1e3ac17dbbe3fe9
+        id: brew
+      - name: Install Electron runtime libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-0t64 libnss3 libasound2t64 libgbm1 libxss1 libxtst6 libnotify4 libsecret-1-0 libatspi2.0-0t64
+      - name: Check formula style
+        env:
+          TAP_NAME: ${{ steps.brew.outputs.tap-name }}
+        run: brew style --formula "$TAP_NAME/orca"
+      - name: Install and test formula
+        env:
+          TAP_NAME: ${{ steps.brew.outputs.tap-name }}
+          ORCA_BACKGROUND_LAUNCH: "1"
+        run: |
+          brew install --formula "$TAP_NAME/orca"
+          brew test "$TAP_NAME/orca"
+          test -f "$(brew --prefix)/share/applications/orca-ide.desktop"
+          brew uninstall --formula "$TAP_NAME/orca"
