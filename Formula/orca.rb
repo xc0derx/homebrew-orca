@@ -15,6 +15,7 @@ class Orca < Formula
   end
 
   depends_on :linux
+  conflicts_with "orca-cli", because: "both install the orca-ide command"
 
   def install
     appimage = Dir["*.AppImage"].fetch(0)
