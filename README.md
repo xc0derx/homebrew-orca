@@ -10,7 +10,7 @@ Homebrew tap for [Orca](https://github.com/stablyai/orca) — an IDE for orchest
 brew install --cask stablyai/orca/orca
 ```
 
-### Linux (x86_64 and ARM64)
+### Linux desktop (x86_64 and ARM64)
 
 ```bash
 brew install --formula stablyai/orca/orca
@@ -24,7 +24,7 @@ The macOS casks, including `orca@rc`, remain separate; the Linux formula tracks
 stable releases only.
 
 Install Electron's runtime libraries using your distribution's package manager.
-For Ubuntu 24.04:
+For Ubuntu 24.04 and 26.04:
 
 ```bash
 sudo apt-get install libgtk-3-0t64 libnss3 libasound2t64 libgbm1 libxss1 libxtst6 libnotify4 libsecret-1-0 libatspi2.0-0t64
@@ -49,6 +49,31 @@ mkdir -p ~/.local/share/applications
 ln -sfn "$(brew --prefix)/share/applications/orca-ide.desktop" ~/.local/share/applications/orca-ide.desktop
 ```
 
+### Linux CLI and headless server (x86_64 and ARM64)
+
+```bash
+brew install --formula stablyai/orca/orca-cli
+orca-ide serve
+```
+
+This package installs the CLI, the Node headless server and its matching Node
+runtime. It does not install Electron or require the desktop application.
+Upstream currently distributes these files inside the AppImage, which is
+extracted during installation; only the CLI and server files are kept.
+The desktop and CLI formulas cannot be installed together because both provide
+`orca-ide`.
+
+The server listens on loopback by default. Supported server options are `--port`,
+`--bind`, `--pairing-address`, `--no-pairing` and `--json`. For remote clients:
+
+```bash
+orca-ide serve --bind 0.0.0.0 --pairing-address HOST
+```
+
+Pairing remains enabled unless explicitly disabled. This Node backend does not
+provide desktop windows or Electron browser panes. Other CLI commands connect
+to the running server; for example, `orca-ide status --json`.
+
 ## Updates
 
 On macOS, Orca updates itself in place via its built-in updater. `brew upgrade`
@@ -62,7 +87,10 @@ brew upgrade --formula stablyai/orca/orca
 brew uninstall --formula stablyai/orca/orca
 ```
 
-Uninstalling the Linux formula preserves user data such as `~/.orca`.
+For the standalone package, use `brew upgrade stablyai/orca/orca-cli` and
+`brew uninstall stablyai/orca/orca-cli`.
+
+Uninstalling either Linux formula preserves user data such as `~/.orca`.
 
 ## About this repo
 
