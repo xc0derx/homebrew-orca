@@ -1,5 +1,5 @@
 class OrcaCli < Formula
-  desc "Orca CLI and headless server without the desktop application"
+  desc "CLI and headless server for orchestrating AI coding agents"
   homepage "https://onorca.dev/"
   version "1.4.222"
   license "MIT"
@@ -48,15 +48,15 @@ class OrcaCli < Formula
     files = manifest.fetch("commonSha256").merge(manifest.fetch("targets").fetch(target).fetch("files"))
     files.each do |name, sha|
       source = manifest.fetch("commonSha256").key?(name) ? template/name : template/"targets"/target/name
-      odie "Invalid server artifact: #{name}" unless Digest::SHA256.file(source).hexdigest == sha
+      odie "Invalid server artifact: #{name}" if Digest::SHA256.file(source).hexdigest != sha
       destination = libexec/"server"/name
       destination.dirname.mkpath
       cp source, destination
     end
     resource("node-runtime").stage { (libexec/"runtime").install "bin/node" }
     runtime_sha = (libexec/"server/.runtime-node").read.strip
-    odie "Node runtime does not match Orca's native modules" unless
-      Digest::SHA256.file(libexec/"runtime/node").hexdigest == runtime_sha
+    odie "Node runtime does not match Orca's native modules" if
+      Digest::SHA256.file(libexec/"runtime/node").hexdigest != runtime_sha
 
     (bin/"orca-ide").write <<~SH
       #!/bin/bash
@@ -98,8 +98,10 @@ class OrcaCli < Formula
       end
       assert status.fetch("ok"), log.read
     ensure
-      Process.kill("TERM", pid) if Process.waitpid(pid, Process::WNOHANG).nil?
-      Process.wait(pid) rescue Errno::ECHILD
+      if Process.waitpid(pid, Process::WNOHANG).nil?
+        Process.kill("TERM", pid)
+        Process.wait(pid)
+      end
     end
   end
 end
